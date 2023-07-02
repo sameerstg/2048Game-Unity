@@ -25,7 +25,14 @@ public class Grid : MonoBehaviour
     public static List<Color> staticColors;
     public TMP_Dropdown drop;
     internal static string winNum;
-
+    public TextMeshProUGUI gameStateText,currentText,highestText;
+    public int score;
+    public int highestScore;
+    [ContextMenu("Delete")]
+    public void DeleteData()
+    {
+        PlayerPrefs.DeleteAll();
+    }
     private void Awake()
     {
         staticColors = colors;
@@ -33,6 +40,8 @@ public class Grid : MonoBehaviour
     }
     private void Start()
     {
+        currentText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
+        highestText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
         drop.value = PlayerPrefs.GetInt("drop");
         winNum = drop.options[drop.value].text;
 
@@ -146,10 +155,13 @@ public class Grid : MonoBehaviour
                 tempIndex += direction;
                 Tile newTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
                 bool win = newTile.piece.SetPosition(/*tiles[(int)tempIndex.x, (int)tempIndex.y].worldPosition*/);
+                score += newTile.piece.value;
                 if (win)
                 {
                     Debug.Log("You won ");
                     win = true;
+                    canPlay = false;
+                    StartCoroutine(DelayStartGame("Win"));
                     return tempIndex;
                 }
                 newTile.piece.isChanged = true;
@@ -345,10 +357,28 @@ public class Grid : MonoBehaviour
             canPlay = true;
         }
     }
-    
-    void StartNewGame()
+    public void SetScore()
     {
-       
+        currentText.text = $"Score : {score}";
+        if (highestScore<score)
+        {
+            PlayerPrefs.SetInt($"{drop.value}", score);
+            highestScore = score;
+            highestText.text = $"Highest Score : {score}";
+        }
+        
+    }
+       void StartNewGame()
+    {
+        
+        
+        score = 0;
+        highestScore = PlayerPrefs.GetInt($"{drop.value}");
+        highestText.text = $"Highest Score : {highestScore}";
+        SetScore();
+        gameStateText.gameObject.SetActive(false);
+        win = false;
+
         canPlay = true;
         id = 0;
         if (drop.value == 0)
@@ -434,6 +464,8 @@ public class Grid : MonoBehaviour
         go.GetComponent<Image>().color = Color.blue;
         tile.piece.id = id;
         tile.piece.SetPosition(id, go, tile.worldPosition, 2);
+        SetScore();
+
 
         id++;
         foreach (var item in tiles)
@@ -455,12 +487,17 @@ public class Grid : MonoBehaviour
     {
         print("game over");
         canPlay = false;
-        StartCoroutine(DelayStartGame());
+        StartCoroutine(DelayStartGame("Lost"));
     }
     
-    IEnumerator DelayStartGame()
+    IEnumerator DelayStartGame(string gameState)
     {
+        gameStateText.gameObject.SetActive(true);
+        gameStateText.text = $"You {gameState}";
+        gameStateText.transform.localScale = new Vector3(1, 1, 1);
+        iTween.ScaleTo(gameStateText.gameObject, new Vector3(2, 2, 2), 1);
         yield return new WaitForSeconds(2);
+        
         StartNewGame();
     }
     bool IsGameOver()
