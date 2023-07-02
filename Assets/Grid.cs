@@ -330,7 +330,7 @@ public class Grid : MonoBehaviour
         width = tilePrefab.transform.localScale.x;
         for (int i = 0; i < tiles.GetLength(0); i++)
         {
-            Vector2 startx = Vector2.left * width / 2 + Vector2.down * width / 2;
+            Vector2 startx = Vector2.left * width*(sizeOfGrid-1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
 
 
 
