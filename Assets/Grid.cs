@@ -19,7 +19,8 @@ public class Grid : MonoBehaviour
     private bool canPlay;
     bool win;
     public int id = 0;
-    private void Awake()
+    public float lastMovedTime;
+       private void Awake()
     {
         inputSystem = new InputSystem();
         tiles = new Tile[sizeOfGrid, sizeOfGrid];
@@ -31,7 +32,42 @@ public class Grid : MonoBehaviour
         inputSystem.PlayerActionMap.Up.started += Up;
         inputSystem.PlayerActionMap.Left.started += Left;
         inputSystem.PlayerActionMap.Right.started += Right;
+        inputSystem.PlayerActionMap.TouchContact.started += TouchStart;
+        inputSystem.PlayerActionMap.TouchPosition.started += TouchPos;
+
     }
+      private void TouchPos(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        if (Time.time<lastMovedTime+0.2f)
+        {
+            return;
+        }
+        lastMovedTime = Time.time;
+        var dir = obj.ReadValue<Vector2>();
+        if (dir.x > 0)
+        {
+
+            Right();
+        }
+        else if (dir.x < 0)
+        {
+            Left();
+        }
+        else if (dir.y > 0)
+        {
+            Up();
+        }
+        else if (dir.y < 0)
+        {
+            Down();
+        }
+    }
+
+    private void TouchStart(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        Debug.Log("Start Touch Position "+ obj.ReadValue<Vector2>());
+    }
+
     [ContextMenu("win")]
     public void MakeWiningPosition()
     {
@@ -111,10 +147,8 @@ public class Grid : MonoBehaviour
         }
     }
 
-    private void Left(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    void Left()
     {
-
-
         if (!canPlay)
         {
             return;
@@ -149,10 +183,22 @@ public class Grid : MonoBehaviour
         {
             canPlay = true;
         }
+    }
+    private void Left(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+
+        Left();
+        
 
     }
 
     private void Up(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        Up();
+        
+    }
+
+    private void Up()
     {
         if (!canPlay)
         {
@@ -192,6 +238,13 @@ public class Grid : MonoBehaviour
 
     private void Right(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
+        Right();
+       
+
+    }
+
+    private void Right()
+    {
         if (!canPlay)
         {
             return;
@@ -225,10 +278,16 @@ public class Grid : MonoBehaviour
         {
             canPlay = true;
         }
-
     }
 
     private void Down(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        Down();
+       
+
+    }
+
+    private void Down()
     {
         if (!canPlay)
         {
@@ -266,7 +325,6 @@ public class Grid : MonoBehaviour
         {
             canPlay = true;
         }
-
     }
 
     private void Start()
