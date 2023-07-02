@@ -327,25 +327,25 @@ public class Grid : MonoBehaviour
 
     private void Start()
     {
-        width = tilePrefab.transform.localScale.x;
+        width = tilePrefab.GetComponent<RectTransform>().sizeDelta.x;
+            Vector2 startx = Vector2.left * width*(sizeOfGrid-1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
         for (int i = 0; i < tiles.GetLength(0); i++)
         {
-            Vector2 startx = Vector2.left * width*(sizeOfGrid-1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
 
 
 
             for (int j = 0; j < tiles.GetLength(1); j++)
             {
 
-                GameObject go = Instantiate(tilePrefab);
-                go.transform.position = startx + j * width * Vector2.right + i * width * Vector2.up;
+                GameObject go = Instantiate(tilePrefab,parent);
+                go.GetComponent<RectTransform>().anchoredPosition = startx + i * width * Vector2.right + j * width * Vector2.up;
 
 
                 tiles[i, j] = new Tile();
                 tiles[i, j].gameObject = go;
                 tiles[i, j].gridPosition = new Vector2(i, j);
                 tiles[i, j].gameObject.name = new Vector2(i, j).ToString();
-                tiles[i, j].worldPosition = startx + i * width * Vector2.right + j * width * Vector2.up;
+                tiles[i, j].worldPosition = go.transform.position;
 
             }
 
@@ -369,8 +369,8 @@ public class Grid : MonoBehaviour
     IEnumerator CreateNewNumberD(Tile tile)
     {
         yield return new WaitForSeconds(0.05f);
-        var go = Instantiate(tilePrefab);
-        go.GetComponent<SpriteRenderer>().color = Color.blue;
+        var go = Instantiate(tilePrefab,parent);
+        go.GetComponent<Image>().color = Color.blue;
         tile.piece.id = id;
         tile.piece.SetPosition(id, go, tile.worldPosition, 2);
 
@@ -466,7 +466,8 @@ public class Piece
                if (animate)
         {
 
-        iTween.MoveTo(gameObject, worldPosition,0.3f);
+            iTween.MoveTo(gameObject, worldPosition, 0.4f);
+          
         }
         else
         {
@@ -508,40 +509,40 @@ public class Piece
         switch (value)
         {
             case 2:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[0];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[0];
                 break;
             case 4:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[1];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[1];
                 break;
             case 8:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[2];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[2];
                 break;
             case 16:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[3];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[3];
                 break;
             case 32:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[4];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[4];
                 break;
             case 64:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[5];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[5];
                 break;
             case 128:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[6];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[6];
                 break;
             case 256:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[7];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[7];
                 break;
             case 512:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[8];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[8];
                 break;
             case 1024:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[9];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[9];
                 break;
             case 2048:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[10];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[10];
                 break;
 case 4096:
-                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[11];
+                gameObject.GetComponent<Image>().color = Grid.staticColors[11];
                 break;
 
 
