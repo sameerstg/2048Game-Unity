@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -22,12 +23,32 @@ public class Grid : MonoBehaviour
     public float lastMovedTime;
     public List<Color> colors;
     public static List<Color> staticColors;
+    public TMP_Dropdown drop;
+    internal static string winNum;
+
     private void Awake()
     {
         staticColors = colors;
         inputSystem = new InputSystem();
-        tiles = new Tile[sizeOfGrid, sizeOfGrid];
     }
+    private void Start()
+    {
+        drop.value = PlayerPrefs.GetInt("drop");
+        winNum = drop.options[drop.value].text;
+
+        drop.onValueChanged.AddListener(delegate { OnChange(); });
+        StartNewGame();
+
+    }
+
+    private void OnChange()
+    {
+        //Debug.Log("Change");
+        winNum = drop.options[drop.value].text;
+        PlayerPrefs.SetInt("drop", drop.value);
+        StartNewGame();
+    }
+
     private void OnEnable()
     {
         inputSystem.Enable();
@@ -71,13 +92,13 @@ public class Grid : MonoBehaviour
     {
         Tile tile = tiles[0, 0];
         Tile tile1 = tiles[1, 0];
-        var go = Instantiate(tilePrefab);
-        var go1 = Instantiate(tilePrefab);
+        var go = Instantiate(tilePrefab,parent);
+        var go1 = Instantiate(tilePrefab,parent);
         tile.piece.id = id;
         id++;
-        tile.piece.SetPosition(id, go, tile.worldPosition, 2048);
+        tile.piece.SetPosition(id, go, tile.worldPosition, int.Parse(winNum) / 2);
         
-        tile1.piece.SetPosition(id, go1, tile1.worldPosition, 2048);
+        tile1.piece.SetPosition(id, go1, tile1.worldPosition, int.Parse(winNum)/2);
         id++;
     }
     public Vector2 KeepGoing(Vector2 index, Vector2 direction)
@@ -324,11 +345,51 @@ public class Grid : MonoBehaviour
             canPlay = true;
         }
     }
-
-    private void Start()
+    
+    void StartNewGame()
     {
+       
+        canPlay = true;
+        id = 0;
+        if (drop.value == 0)
+        {
+            sizeOfGrid = 4;
+
+
+
+        }
+        else if (drop.value<=2)
+        {
+
+            sizeOfGrid = 5;
+        }
+        else
+        {
+
+            sizeOfGrid = 6;
+        }
+        float size = Screen.width / (sizeOfGrid+1);
+        size -= 50;
+        tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
+        if (tiles != null)
+        {
+            foreach (var item in tiles)
+            {
+                if (item.gameObject != null)
+                {
+                    Destroy(item.gameObject);
+                }
+                if (item.piece.gameObject != null)
+                {
+                    Destroy(item.piece.gameObject);
+
+                }
+            }
+        }
+        tiles = new Tile[sizeOfGrid, sizeOfGrid];
+
         width = tilePrefab.GetComponent<RectTransform>().sizeDelta.x;
-            Vector2 startx = Vector2.left * width*(sizeOfGrid-1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
+        Vector2 startx = Vector2.left * width * (sizeOfGrid - 1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
         for (int i = 0; i < tiles.GetLength(0); i++)
         {
 
@@ -337,7 +398,7 @@ public class Grid : MonoBehaviour
             for (int j = 0; j < tiles.GetLength(1); j++)
             {
 
-                GameObject go = Instantiate(tilePrefab,parent);
+                GameObject go = Instantiate(tilePrefab, parent);
                 go.GetComponent<RectTransform>().anchoredPosition = startx + i * width * Vector2.right + j * width * Vector2.up;
 
 
@@ -393,7 +454,14 @@ public class Grid : MonoBehaviour
     void GameOver()
     {
         print("game over");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        canPlay = false;
+        StartCoroutine(DelayStartGame());
+    }
+    
+    IEnumerator DelayStartGame()
+    {
+        yield return new WaitForSeconds(2);
+        StartNewGame();
     }
     bool IsGameOver()
     {
@@ -498,7 +566,7 @@ public class Piece
         gameObject.GetComponentInChildren<TextMeshProUGUI>().text = value.ToString();
 
         SetColor();
-        if (value == 4096)
+        if (value.ToString() == Grid.winNum)
         {
             return true;
         }
@@ -541,12 +609,16 @@ public class Piece
             case 2048:
                 gameObject.GetComponent<Image>().color = Grid.staticColors[10];
                 break;
-case 4096:
+            case 4096:
                 gameObject.GetComponent<Image>().color = Grid.staticColors[11];
                 break;
 
-
-
+            case 8192:
+                gameObject.GetComponent<Image>().color = Grid.staticColors[12];
+                break;
+            case 16384:
+                gameObject.GetComponent<Image>().color = Grid.staticColors[13];
+                break; ;
             default:
                 break;
         }
