@@ -20,8 +20,11 @@ public class Grid : MonoBehaviour
     bool win;
     public int id = 0;
     public float lastMovedTime;
-       private void Awake()
+    public List<Color> colors;
+    public static List<Color> staticColors;
+    private void Awake()
     {
+        staticColors = colors;
         inputSystem = new InputSystem();
         tiles = new Tile[sizeOfGrid, sizeOfGrid];
     }
@@ -32,7 +35,6 @@ public class Grid : MonoBehaviour
         inputSystem.PlayerActionMap.Up.started += Up;
         inputSystem.PlayerActionMap.Left.started += Left;
         inputSystem.PlayerActionMap.Right.started += Right;
-        inputSystem.PlayerActionMap.TouchContact.started += TouchStart;
         inputSystem.PlayerActionMap.TouchPosition.started += TouchPos;
 
     }
@@ -63,11 +65,7 @@ public class Grid : MonoBehaviour
         }
     }
 
-    private void TouchStart(UnityEngine.InputSystem.InputAction.CallbackContext obj)
-    {
-        Debug.Log("Start Touch Position "+ obj.ReadValue<Vector2>());
-    }
-
+   
     [ContextMenu("win")]
     public void MakeWiningPosition()
     {
@@ -510,40 +508,40 @@ public class Piece
         switch (value)
         {
             case 2:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.blue;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[0];
                 break;
             case 4:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.green;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[1];
                 break;
             case 8:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.yellow;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[2];
                 break;
             case 16:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[3];
                 break;
             case 32:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[4];
                 break;
             case 64:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.cyan;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[5];
                 break;
             case 128:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.grey;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[6];
                 break;
             case 256:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[7];
                 break;
             case 512:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[8];
                 break;
             case 1024:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[9];
                 break;
             case 2048:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[10];
                 break;
 case 4096:
-                gameObject.GetComponent<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponent<SpriteRenderer>().color = Grid.staticColors[11];
                 break;
 
 
