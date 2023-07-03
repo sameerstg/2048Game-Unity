@@ -26,8 +26,12 @@ public class Grid : MonoBehaviour
     public TMP_Dropdown drop;
     internal static string winNum;
     public TextMeshProUGUI gameStateText,currentText,highestText;
-    public int score;
-    public int highestScore;
+    int score;
+    int highestScore;
+    public AudioSource auSource;
+    public AudioClip matchSound, loseSound, winSound, elseSound;
+    public Button music;
+
     [ContextMenu("Delete")]
     public void DeleteData()
     {
@@ -35,11 +39,43 @@ public class Grid : MonoBehaviour
     }
     private void Awake()
     {
+        auSource =Camera.main.GetComponent<AudioSource>();
         staticColors = colors;
         inputSystem = new InputSystem();
     }
     private void Start()
     {
+        if (PlayerPrefs.GetString("music")=="0")
+        {
+            auSource.Stop();
+            music.transform.GetChild(0).gameObject.SetActive(false);
+            music.transform.GetChild(1).gameObject.SetActive(true);
+        }
+        else
+        {
+            music.transform.GetChild(0).gameObject.SetActive(true);
+            music.transform.GetChild(1).gameObject.SetActive(false);
+        }
+        music.onClick.AddListener(() =>
+        {
+            if (PlayerPrefs.GetString("music") == "0")
+            {
+                auSource.Play();
+                PlayerPrefs.SetString("music", "1");
+                music.transform.GetChild(0).gameObject.SetActive(true);
+                music.transform.GetChild(1).gameObject.SetActive(false);
+
+            }
+            else
+            {
+                auSource.Stop();
+                PlayerPrefs.SetString("music", "0");
+                music.transform.GetChild(0).gameObject.SetActive(false);
+                music.transform.GetChild(1).gameObject.SetActive(true);
+
+            }
+        });
+        
         currentText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
         highestText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
         drop.value = PlayerPrefs.GetInt("drop");
@@ -70,32 +106,74 @@ public class Grid : MonoBehaviour
     }
       private void TouchPos(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-        if (Time.time<lastMovedTime+0.2f)
+        if (Time.time < lastMovedTime + 0.2f)
         {
             return;
         }
         lastMovedTime = Time.time;
         var dir = obj.ReadValue<Vector2>();
-        if (dir.x > 0)
+        bool hor = false, vert = false;
+
+        if (dir.x > 0 || dir.x < 0)
         {
 
-            Right();
+            hor = true;
         }
-        else if (dir.x < 0)
+        if (dir.y > 0 || dir.y < 0)
         {
-            Left();
+            vert = true;
         }
-        else if (dir.y > 0)
+        if (vert && hor)
         {
-            Up();
+            if (Mathf.Abs(dir.x)> Mathf.Abs(dir.y))
+            {
+                if (dir.x>0)
+                {
+                    Right();
+                }
+                else
+                {
+                    Left();
+                }
+            }
+            else
+            {
+                if (dir.y > 0)
+                {
+                    Up();
+                }
+                else
+                {
+                    Down();
+                }
+            }
         }
-        else if (dir.y < 0)
+        else if (vert)
         {
-            Down();
+            if (dir.y > 0)
+            {
+                Up();
+            }
+            else
+            {
+                Down();
+            }
         }
+        else if (hor)
+        {
+            if (dir.x > 0)
+            {
+                Right();
+            }
+            else
+            {
+                Left();
+            }
+        }
+
     }
 
-   
+
     [ContextMenu("win")]
     public void MakeWiningPosition()
     {
@@ -156,11 +234,15 @@ public class Grid : MonoBehaviour
                 Tile newTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
                 bool win = newTile.piece.SetPosition(/*tiles[(int)tempIndex.x, (int)tempIndex.y].worldPosition*/);
                 score += newTile.piece.value;
+                auSource.PlayOneShot(matchSound);
+
                 if (win)
                 {
                     Debug.Log("You won ");
                     win = true;
                     canPlay = false;
+                    auSource.PlayOneShot(winSound);
+
                     StartCoroutine(DelayStartGame("Win"));
                     return tempIndex;
                 }
@@ -398,7 +480,7 @@ public class Grid : MonoBehaviour
 
             sizeOfGrid = 6;
         }
-        float size = Screen.width / (sizeOfGrid+1);
+        float size = Screen.safeArea.width / (sizeOfGrid+0.5f);
         size -= 50;
         tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
         if (tiles != null)
@@ -460,6 +542,9 @@ public class Grid : MonoBehaviour
     IEnumerator CreateNewNumberD(Tile tile)
     {
         yield return new WaitForSeconds(0.05f);
+
+        auSource.PlayOneShot(elseSound);
+
         var go = Instantiate(tilePrefab,parent);
         go.GetComponent<Image>().color = Color.blue;
         tile.piece.id = id;
@@ -486,6 +571,7 @@ public class Grid : MonoBehaviour
     void GameOver()
     {
         print("game over");
+        auSource.PlayOneShot(loseSound);
         canPlay = false;
         StartCoroutine(DelayStartGame("Lost"));
     }
