@@ -31,6 +31,7 @@ public class Grid : MonoBehaviour
     public AudioSource auSource;
     public AudioClip matchSound, loseSound, winSound, elseSound;
     public Button music;
+    private float size;
 
     [ContextMenu("Delete")]
     public void DeleteData()
@@ -480,8 +481,9 @@ public class Grid : MonoBehaviour
 
             sizeOfGrid = 6;
         }
-        float size = Screen.safeArea.width / (sizeOfGrid+0.5f);
-        size -= 50;
+         size = 1000 / (sizeOfGrid+1);
+        //Debug.Log(size);
+    
         tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
         if (tiles != null)
         {
