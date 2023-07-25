@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 public class Grid : MonoBehaviour
 {
+    public static Grid _instance;
     private InputSystem inputSystem;
     public Tile[,] tiles;
     public int sizeOfGrid;
@@ -32,6 +33,7 @@ public class Grid : MonoBehaviour
     public AudioClip matchSound, loseSound, winSound, elseSound;
     public Button music;
     private float size;
+    int timesGameStarted;
 
     [ContextMenu("Delete")]
     public void DeleteData()
@@ -40,12 +42,14 @@ public class Grid : MonoBehaviour
     }
     private void Awake()
     {
+        _instance = this;
         auSource =Camera.main.GetComponent<AudioSource>();
         staticColors = colors;
         inputSystem = new InputSystem();
     }
-    private void Start()
+    private IEnumerator Start()
     {
+        timesGameStarted = 0;
         if (PlayerPrefs.GetString("music")=="0")
         {
             auSource.Stop();
@@ -83,6 +87,9 @@ public class Grid : MonoBehaviour
         winNum = drop.options[drop.value].text;
 
         drop.onValueChanged.AddListener(delegate { OnChange(); });
+        gameStateText.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(0.5f);
         StartNewGame();
 
     }
@@ -453,8 +460,21 @@ public class Grid : MonoBehaviour
     }
        void StartNewGame()
     {
-        
-        
+        timesGameStarted++;
+        if (timesGameStarted>=3)
+        {
+            if (AdManager._instance.ShowIntersatialAd())
+            {
+
+                timesGameStarted = 0;
+
+            }
+            
+
+
+
+        }
+
         score = 0;
         highestScore = PlayerPrefs.GetInt($"{drop.value}");
         highestText.text = $"Highest Score : {highestScore}";
