@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class AdManager : MonoBehaviour
 {
-#if UNITY_EDITOR
     private string _adUnitIdBanner = "ca-app-pub-3940256099942544/6300978111";
     private string _adUnitIdIntersatial = "ca-app-pub-3940256099942544/1033173712";
-#elif  UNITY_ANDROID
-    private string _adUnitIdBanner = "ca-app-pub-4216476940239064/1042688850";
-    private string _adUnitIdIntersatial = "ca-app-pub-4216476940239064/2164198830";
-#endif
+//#if UNITY_EDITOR
+//#elif  UNITY_ANDROID
+//    private string _adUnitIdBanner = "ca-app-pub-4216476940239064/1042688850";
+//    private string _adUnitIdIntersatial = "ca-app-pub-4216476940239064/2164198830";
+//#endif
     BannerView _bannerView;
     public static AdManager _instance;
     private void Awake()
