@@ -137,22 +137,22 @@ public class Grid : MonoBehaviour
             {
                 if (dir.x>0)
                 {
-                    Right();
+                   Move(Vector2.right);
                 }
                 else
                 {
-                    Left();
+                   Move(Vector2.left);
                 }
             }
             else
             {
                 if (dir.y > 0)
                 {
-                    Up();
+                   Move(Vector2.up);
                 }
                 else
                 {
-                    Down();
+                   Move(Vector2.down);
                 }
             }
         }
@@ -160,27 +160,92 @@ public class Grid : MonoBehaviour
         {
             if (dir.y > 0)
             {
-                Up();
+               Move(Vector2.up);
             }
             else
             {
-                Down();
+               Move(Vector2.down);
             }
         }
         else if (hor)
         {
             if (dir.x > 0)
             {
-                Right();
+               Move(Vector2.right);
             }
             else
             {
-                Left();
+               Move(Vector2.left);
             }
         }
 
     }
 
+    void Move(Vector2 direction)
+    {
+        if (!canPlay)
+        {
+            return;
+        }
+        if (direction == Vector2.left || Vector2.down == direction)
+        {
+            for (int i = 0; i < tiles.GetLength(0); i++)
+            {
+
+
+
+                for (int j = 0; j < tiles.GetLength(1); j++)
+                {
+                    if (tiles[i, j].piece.value != 0)
+                    {
+                        KeepGoing(new Vector2(i, j), direction);
+                        //if (newPos != new Vector2(i, j))
+                        //{
+                        //    oldAndNewPos.Add(new Vector2(i, j), newPos);
+                        //}
+
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            for (int i = tiles.GetLength(0) - 1; i >= 0; i--)
+            {
+
+
+
+                for (int j = tiles.GetLength(1) - 1; j >= 0; j--)
+                {
+                    if (tiles[i, j].piece.value != 0)
+                    {
+                        KeepGoing(new Vector2(i, j), direction);
+                        //if (newPos != new Vector2(i, j))
+                        //{
+                        //    oldAndNewPos.Add(new Vector2(i, j), newPos);
+                        //}
+
+                    }
+
+                }
+            }
+           
+           
+        }
+        
+        //oldAndNewPos.Clear();
+
+        if (delAction != null)
+        {
+            delAction();
+            delAction = null;
+        }
+        else
+        {
+            canPlay = true;
+        }
+    }
 
     [ContextMenu("win")]
     public void MakeWiningPosition()
@@ -196,50 +261,52 @@ public class Grid : MonoBehaviour
         tile1.piece.SetPosition(id, go1, tile1.worldPosition, int.Parse(winNum)/2);
         id++;
     }
-    public Vector2 KeepGoing(Vector2 index, Vector2 direction)
+    public void KeepGoing(Vector2 index, Vector2 direction)
     {
         canPlay = false;
-        Vector2 tempIndex = index;
+        
 
         while (true)
         {
-            Vector2 makeSureVector = tempIndex + direction;
+            Vector2 makeSureVector = index + direction;
             if (makeSureVector.x < 0 || makeSureVector.x > sizeOfGrid - 1 || makeSureVector.y < 0 || makeSureVector.y > sizeOfGrid - 1)
             {
-                return tempIndex;
+                return;
             }
-            if (tiles[(int)(tempIndex.x + direction.x), (int)(tempIndex.y + direction.y)].piece.value == 0)
+            if (tiles[(int)(index.x + direction.x), (int)(index.y + direction.y)].piece.value == 0)
             {
 
 
-
-                Tile oldTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
-                tempIndex += direction;
-                Tile newTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
-                newTile.piece.SetPosition(oldTile.piece.id, oldTile.piece.gameObject, newTile.worldPosition, oldTile.piece.value, true);
+                
+                Tile oldTile = tiles[(int)index.x, (int)index.y];
+                index += direction;
+                Tile newTile = tiles[(int)index.x, (int)index.y];
+                newTile.piece.SetPosition(oldTile.piece.id, oldTile.piece.gameObject, newTile.worldPosition, oldTile.piece.value,animate:true);
+                
                 oldTile.piece.gameObject = null;
                 oldTile.piece.value = 0;
-
+                oldTile.piece.isChanged = oldTile.piece.toBeAnimated= false;
+                
                 if (delAction == null)
                 {
                     delAction = CreateNewNumber;
                 }
 
             }
-            else if (tiles[(int)tempIndex.x, (int)tempIndex.y].piece.value == tiles[(int)(tempIndex.x + direction.x), (int)(tempIndex.y + direction.y)].piece.value)
+            else if (tiles[(int)index.x, (int)index.y].piece.value == tiles[(int)(index.x + direction.x), (int)(index.y + direction.y)].piece.value)
             {
-                if (tiles[(int)(tempIndex.x + direction.x), (int)(tempIndex.y + direction.y)].piece.isChanged || tiles[(int)tempIndex.x, (int)tempIndex.y].piece.isChanged)
+                if (tiles[(int)(index.x + direction.x), (int)(index.y + direction.y)].piece.isChanged || tiles[(int)index.x, (int)index.y].piece.isChanged)
                 {
-                    return tempIndex;
+                    return;
                 }
-                Tile oldTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
-                tiles[(int)tempIndex.x, (int)tempIndex.y].piece.gameObject.name = "ss";
-                DestroyImmediate(tiles[(int)tempIndex.x, (int)tempIndex.y].piece.gameObject);
-                tiles[(int)tempIndex.x, (int)tempIndex.y].piece.gameObject = null;
-                tiles[(int)tempIndex.x, (int)tempIndex.y].piece.value = 0;
-
-                tempIndex += direction;
-                Tile newTile = tiles[(int)tempIndex.x, (int)tempIndex.y];
+                Tile oldTile = tiles[(int)index.x, (int)index.y];
+                tiles[(int)index.x, (int)index.y].piece.gameObject.name = "ss";
+                DestroyImmediate(tiles[(int)index.x, (int)index.y].piece.gameObject);
+                tiles[(int)index.x, (int)index.y].piece.gameObject = null;
+                tiles[(int)index.x, (int)index.y].piece.value = 0;
+                tiles[(int)index.x, (int)index.y].piece.toBeAnimated = tiles[(int)index.x, (int)index.y].piece.isChanged = false;
+                index += direction;
+                Tile newTile = tiles[(int)index.x, (int)index.y];
                 bool win = newTile.piece.SetPosition(/*tiles[(int)tempIndex.x, (int)tempIndex.y].worldPosition*/);
                 score += newTile.piece.value;
                 auSource.PlayOneShot(matchSound);
@@ -248,13 +315,12 @@ public class Grid : MonoBehaviour
                 {
                     Debug.Log("You won ");
                     win = true;
-                    canPlay = false;
                     auSource.PlayOneShot(winSound);
 
                     StartCoroutine(DelayStartGame("Win"));
-                    return tempIndex;
+                    return;
                 }
-                newTile.piece.isChanged = true;
+                //newTile.piece.isChanged = true;
                 if (delAction == null)
                 {
                     delAction = CreateNewNumber;
@@ -263,190 +329,43 @@ public class Grid : MonoBehaviour
             else
             {
 
-                return tempIndex;
+                return;
             }
         }
     }
 
-    void Left()
-    {
-        if (!canPlay)
-        {
-            return;
-        }
-        for (int i = 1; i < tiles.GetLength(0); i++)
-        {
-
-
-
-            for (int j = 0; j < tiles.GetLength(1); j++)
-            {
-                if (tiles[i, j].piece.value != 0)
-                {
-                    var newPos = KeepGoing(new Vector2(i, j), Vector2.left);
-                    if (newPos != new Vector2(i, j))
-                    {
-                        oldAndNewPos.Add(new Vector2(i, j), newPos);
-                    }
-
-                }
-
-            }
-        }
-        oldAndNewPos.Clear();
-
-        if (delAction != null)
-        {
-            delAction();
-            delAction = null;
-        }
-        else
-        {
-            canPlay = true;
-        }
-    }
     private void Left(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
 
-        Left();
-        
+        Move(Vector2.left);
+
+
 
     }
 
     private void Up(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-        Up();
-        
+        Move(Vector2.up);
+
+
     }
 
-    private void Up()
-    {
-        if (!canPlay)
-        {
-            return;
-        }
-        for (int i = tiles.GetLength(0) - 1; i >= 0; i--)
-        {
-
-
-
-            for (int j = tiles.GetLength(1) - 1; j >= 0; j--)
-            {
-
-                if (tiles[i, j].piece.value != 0)
-                {
-                    var newPos = KeepGoing(new Vector2(i, j), Vector2.up);
-                    if (newPos != new Vector2(i, j))
-                    {
-                        oldAndNewPos.Add(new Vector2(i, j), newPos);
-                    }
-                }
-
-            }
-        }
-        oldAndNewPos.Clear();
-
-        if (delAction != null)
-        {
-            delAction();
-            delAction = null;
-        }
-        else
-        {
-            canPlay = true;
-        }
-    }
 
     private void Right(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-        Right();
-       
-
-    }
-
-    private void Right()
-    {
-        if (!canPlay)
-        {
-            return;
-        }
-        for (int i = tiles.GetLength(0) - 1; i >= 0; i--)
-        {
+        Move(Vector2.right);
 
 
 
-            for (int j = 0; j < tiles.GetLength(1); j++)
-            {
-                if (tiles[i, j].piece.value != 0)
-                {
-                    var newPos = KeepGoing(new Vector2(i, j), Vector2.right);
-                    if (newPos != new Vector2(i, j))
-                    {
-                        oldAndNewPos.Add(new Vector2(i, j), newPos);
-                    }
-                }
-
-            }
-        }
-        oldAndNewPos.Clear();
-
-        if (delAction != null)
-        {
-            delAction();
-            delAction = null;
-        }
-        else
-        {
-            canPlay = true;
-        }
     }
 
     private void Down(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
-        Down();
+        Move(Vector2.down);
        
 
     }
 
-    private void Down()
-    {
-        if (!canPlay)
-        {
-            return;
-        }
-        for (int i = tiles.GetLength(0) - 1; i >= 0; i--)
-        {
-
-
-
-            for (int j = 0; j < tiles.GetLength(1); j++)
-            {
-                if (tiles[i, j].piece.value != 0)
-                {
-                    var newPos = KeepGoing(new Vector2(i, j), Vector2.down);
-                    if (newPos != new Vector2(i, j))
-                    {
-                        oldAndNewPos.Add(new Vector2(i, j), newPos);
-                    }
-                }
-
-            }
-        }
-        oldAndNewPos.Clear();
-        if (win)
-        {
-
-        }
-        if (delAction != null)
-        {
-            delAction();
-            delAction = null;
-        }
-        else
-        {
-            canPlay = true;
-        }
-    }
     public void SetScore()
     {
         currentText.text = $"Score : {score}";
@@ -460,7 +379,6 @@ public class Grid : MonoBehaviour
     }
        void StartNewGame()
     {
-        timesGameStarted++;
         if (timesGameStarted>=3)
         {
             if (AdManager._instance.ShowIntersatialAd())
@@ -563,7 +481,21 @@ public class Grid : MonoBehaviour
     }
     IEnumerator CreateNewNumberD(Tile tile)
     {
-        yield return new WaitForSeconds(0.05f);
+        foreach (var item in tiles)
+        {
+            if (item.piece.isChanged)
+            {
+                item.piece.isChanged = false;
+               
+            }
+            if (item.piece.toBeAnimated && item.piece.gameObject!= null)
+            {
+                item.piece.toBeAnimated = false;
+                item.piece.Animate();
+            }
+        }
+
+        yield return new WaitForSeconds(0.1f);
 
         auSource.PlayOneShot(elseSound);
 
@@ -575,10 +507,7 @@ public class Grid : MonoBehaviour
 
 
         id++;
-        foreach (var item in tiles)
-        {
-            item.piece.isChanged = false;
-        }
+       
         if (!IsGameOver())
         {
 
@@ -604,6 +533,8 @@ public class Grid : MonoBehaviour
         gameStateText.text = $"You {gameState}";
         gameStateText.transform.localScale = new Vector3(1, 1, 1);
         iTween.ScaleTo(gameStateText.gameObject, new Vector3(2, 2, 2), 1);
+        timesGameStarted++;
+
         yield return new WaitForSeconds(2);
         
         StartNewGame();
@@ -666,26 +597,32 @@ public class Piece
 {
 
     public GameObject gameObject;    public int value;
-    internal bool isChanged;
+    internal bool isChanged,toBeAnimated;
+    
     public int id;
-    public void SetPosition(int id,GameObject gameObject, Vector2 worldPosition, int value,bool animate=false)
+    public Vector3 worldPosition;
+    public void Animate()
     {
-        
-        if (gameObject == null)
-        {
-            Debug.Log(null) ;
-        }
-        this.gameObject = gameObject;
-               if (animate)
-        {
 
-            iTween.MoveTo(gameObject, worldPosition, 0.4f);
-          
-        }
-        else
+        iTween.MoveTo(gameObject, worldPosition, 0.15f);
+
+    }
+    public void SetPosition(int id, GameObject gameObject, Vector2 worldPosition, int value, bool animate = false)
+    {
+       
+
+            this.gameObject = gameObject;
+        this.worldPosition = worldPosition;
+
+            this.toBeAnimated = animate;
+        if (!animate)
         {
             gameObject.transform.position = worldPosition;
         }
+       
+        
+       
+       
 
 
         this.value = value;
@@ -704,7 +641,9 @@ public class Piece
     public bool SetPosition()
     {
 
-
+        isChanged = true;
+        
+        //worldPosition = gameObject.transform.position;
         value += value;
         
         gameObject.name = $"id = {id}, value = {value}";
