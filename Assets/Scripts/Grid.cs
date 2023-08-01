@@ -81,8 +81,8 @@ public class Grid : MonoBehaviour
             }
         });
         
-        currentText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
-        highestText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
+        //currentText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
+        //highestText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
         drop.value = PlayerPrefs.GetInt("drop");
         winNum = drop.options[drop.value].text;
 
@@ -368,12 +368,12 @@ public class Grid : MonoBehaviour
 
     public void SetScore()
     {
-        currentText.text = $"Score : {score}";
+        currentText.text = $"{score}";
         if (highestScore<score)
         {
             PlayerPrefs.SetInt($"{drop.value}", score);
             highestScore = score;
-            highestText.text = $"Highest Score : {score}";
+            highestText.text = $"{score}";
         }
         
     }
@@ -395,7 +395,7 @@ public class Grid : MonoBehaviour
 
         score = 0;
         highestScore = PlayerPrefs.GetInt($"{drop.value}");
-        highestText.text = $"Highest Score : {highestScore}";
+        highestText.text = $"{highestScore}";   
         SetScore();
         gameStateText.gameObject.SetActive(false);
         win = false;
