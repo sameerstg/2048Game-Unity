@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.SceneManagement;
+
 using UnityEngine.UI;
+
+
+using Newtonsoft.Json;
 
 public class Grid : MonoBehaviour
 {
@@ -13,7 +15,7 @@ public class Grid : MonoBehaviour
     public Tile[,] tiles;
     public int sizeOfGrid;
     public GameObject tilePrefab;
-    public Transform parent;
+    public Transform parent, pieceParrent;
     float width;
     public delegate void DelAction();
     public DelAction delAction;
@@ -81,8 +83,7 @@ public class Grid : MonoBehaviour
             }
         });
         
-        //currentText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
-        //highestText.transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 2,150);
+
         drop.value = PlayerPrefs.GetInt("drop");
         winNum = drop.options[drop.value].text;
 
@@ -90,16 +91,17 @@ public class Grid : MonoBehaviour
         gameStateText.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(0.5f);
-        StartNewGame();
+        StartNewGame(true);
 
     }
+    
 
     private void OnChange()
     {
         //Debug.Log("Change");
         winNum = drop.options[drop.value].text;
         PlayerPrefs.SetInt("drop", drop.value);
-        StartNewGame();
+        StartNewGame(true);
     }
 
     private void OnEnable()
@@ -240,26 +242,35 @@ public class Grid : MonoBehaviour
         {
             delAction();
             delAction = null;
+
         }
         else
         {
             canPlay = true;
         }
+        
     }
+    void SaveMoves()
+    {
+        PlayerPrefs.SetString($"moves{winNum}", JsonConvert.SerializeObject(tiles));
 
+    }
+    Tile[,] LoadMoves()
+    {
+        //Debug.Log(PlayerPrefs.GetString($"moves{winNum}"));
+        return JsonConvert.DeserializeObject<Tile[,]>(PlayerPrefs.GetString($"moves{winNum}"));
+
+    }
     [ContextMenu("win")]
     public void MakeWiningPosition()
     {
         Tile tile = tiles[0, 0];
         Tile tile1 = tiles[1, 0];
-        var go = Instantiate(tilePrefab,parent);
-        var go1 = Instantiate(tilePrefab,parent);
-        tile.piece.id = id;
-        id++;
-        tile.piece.SetPosition(id, go, tile.worldPosition, int.Parse(winNum) / 2);
+        var go = Instantiate(tilePrefab,pieceParrent);
+        var go1 = Instantiate(tilePrefab, pieceParrent);
+        tile.piece.SetPosition( go, tile.worldPosition, int.Parse(winNum) / 2);
         
-        tile1.piece.SetPosition(id, go1, tile1.worldPosition, int.Parse(winNum)/2);
-        id++;
+        tile1.piece.SetPosition( go1, tile1.worldPosition, int.Parse(winNum)/2);
     }
     public void KeepGoing(Vector2 index, Vector2 direction)
     {
@@ -281,7 +292,7 @@ public class Grid : MonoBehaviour
                 Tile oldTile = tiles[(int)index.x, (int)index.y];
                 index += direction;
                 Tile newTile = tiles[(int)index.x, (int)index.y];
-                newTile.piece.SetPosition(oldTile.piece.id, oldTile.piece.gameObject, newTile.worldPosition, oldTile.piece.value,animate:true);
+                newTile.piece.SetPosition( oldTile.piece.gameObject, newTile.worldPosition, oldTile.piece.value,animate:true);
                 
                 oldTile.piece.gameObject = null;
                 oldTile.piece.value = 0;
@@ -377,7 +388,7 @@ public class Grid : MonoBehaviour
         }
         
     }
-       void StartNewGame()
+       void StartNewGame(bool loadPrevGame = false)
     {
         if (timesGameStarted>=3)
         {
@@ -423,7 +434,7 @@ public class Grid : MonoBehaviour
         //Debug.Log(size);
     
         tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
-        if (tiles != null)
+        if (tiles != null&&tiles != null)
         {
             foreach (var item in tiles)
             {
@@ -442,6 +453,18 @@ public class Grid : MonoBehaviour
 
         width = tilePrefab.GetComponent<RectTransform>().sizeDelta.x;
         Vector2 startx = Vector2.left * width * (sizeOfGrid - 1) / 2 + Vector2.down * (sizeOfGrid - 1) * width / 2;
+        Tile[,] st = null;
+        if (loadPrevGame)
+        {
+             st = LoadMoves();
+            
+            if (st == null || tiles.GetLength(0) != st.GetLength(0) || tiles.GetLength(1) != st.GetLength(1)  )
+            {
+                loadPrevGame = false;
+                Debug.Log("saved data is not correct");
+            }
+
+        }
         for (int i = 0; i < tiles.GetLength(0); i++)
         {
 
@@ -459,12 +482,33 @@ public class Grid : MonoBehaviour
                 tiles[i, j].gridPosition = new Vector2(i, j);
                 tiles[i, j].gameObject.name = new Vector2(i, j).ToString();
                 tiles[i, j].worldPosition = go.transform.position;
+                if (loadPrevGame && st[i, j].piece.value!=0)
+                {
+                
+                    var piece = Instantiate(tilePrefab, pieceParrent);
+                    //piece.GetComponent<Image>().color = Color.blue;
+                    tiles[i, j].piece.SetPosition(piece, go.transform.position, st[i, j].piece.value);
+                    score += st[i, j].piece.value;
+                }
 
             }
 
 
         }
-        CreateNewNumber();
+        if (!loadPrevGame)
+        {
+            
+                CreateNewNumber();
+
+
+
+        }
+        else
+        {
+            auSource.PlayOneShot(elseSound);
+
+        }
+
     }
     public void CreateNewNumber()
     {
@@ -499,19 +543,20 @@ public class Grid : MonoBehaviour
 
         auSource.PlayOneShot(elseSound);
 
-        var go = Instantiate(tilePrefab,parent);
+        var go = Instantiate(tilePrefab, pieceParrent);
         go.GetComponent<Image>().color = Color.blue;
-        tile.piece.id = id;
-        tile.piece.SetPosition(id, go, tile.worldPosition, 2);
+        tile.piece.SetPosition( go, tile.worldPosition, 2);
         SetScore();
 
 
-        id++;
+     
        
         if (!IsGameOver())
         {
 
             canPlay = true;
+            SaveMoves();
+
         }
         else
         {
@@ -584,35 +629,35 @@ public class Grid : MonoBehaviour
 [System.Serializable]
 public class Tile
 {
-    public GameObject gameObject;
-    public Vector2 gridPosition;
-    public Vector2 worldPosition;
-    public Piece piece;
+    internal GameObject gameObject;
+    internal Vector2 gridPosition;
+    internal Vector2 worldPosition;
+    [SerializeField] public Piece piece;
     public Tile()
     {
         piece = new();
     }
 }
+[System.Serializable]
 public class Piece
 {
 
-    public GameObject gameObject;    public int value;
+    internal GameObject gameObject;[SerializeField] public int value;
     internal bool isChanged,toBeAnimated;
     
-    public int id;
-    public Vector3 worldPosition;
+    internal Vector3 worldPosition;
     public void Animate()
     {
 
         iTween.MoveTo(gameObject, worldPosition, 0.15f);
 
     }
-    public void SetPosition(int id, GameObject gameObject, Vector2 worldPosition, int value, bool animate = false)
+    public void SetPosition(GameObject gameObject, Vector2 worldPosition, int value, bool animate = false)
     {
        
 
             this.gameObject = gameObject;
-        this.worldPosition = worldPosition;
+        this.worldPosition = worldPosition ;
 
             this.toBeAnimated = animate;
         if (!animate)
@@ -626,7 +671,6 @@ public class Piece
 
 
         this.value = value;
-        gameObject.name = $"id = {id}, value = {value}";
         if (value == 0)
         {
             gameObject.GetComponentInChildren<TextMeshProUGUI>().text = "";
@@ -646,7 +690,6 @@ public class Piece
         //worldPosition = gameObject.transform.position;
         value += value;
         
-        gameObject.name = $"id = {id}, value = {value}";
         gameObject.GetComponentInChildren<TextMeshProUGUI>().text = value.ToString();
 
         SetColor();
