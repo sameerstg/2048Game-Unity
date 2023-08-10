@@ -34,7 +34,6 @@ public class Grid : MonoBehaviour
     public AudioClip matchSound, loseSound, winSound, elseSound;
     public Button music,retry;
     private float size;
-    int timesGameStarted;
 
     [ContextMenu("Delete")]
     public void DeleteData()
@@ -51,7 +50,6 @@ public class Grid : MonoBehaviour
     private IEnumerator Start()
     {
         retry.onClick.AddListener(() => { StartNewGame(); });
-        timesGameStarted = 0;
         if (PlayerPrefs.GetString("music")=="0")
         {
             auSource.Stop();
@@ -390,19 +388,7 @@ public class Grid : MonoBehaviour
     }
        void StartNewGame(bool loadPrevGame = false)
     {
-        if (timesGameStarted>=3)
-        {
-            if (AdManager._instance.ShowIntersatialAd())
-            {
-
-                timesGameStarted = 0;
-
-            }
-            
-
-
-
-        }
+     
 
         score = 0;
         highestScore = PlayerPrefs.GetInt($"{drop.value}");
@@ -580,7 +566,6 @@ public class Grid : MonoBehaviour
         gameStateText.text = $"You {gameState}";
         gameStateText.transform.localScale = new Vector3(1, 1, 1);
         iTween.ScaleTo(gameStateText.gameObject, new Vector3(2, 2, 2), 1);
-        timesGameStarted++;
 
         yield return new WaitForSeconds(2);
         
