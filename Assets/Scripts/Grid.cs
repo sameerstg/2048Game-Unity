@@ -14,12 +14,11 @@ public class Grid : MonoBehaviour
     private InputSystem inputSystem;
     public Tile[,] tiles;
     public int sizeOfGrid;
-    public GameObject tilePrefab;
+    public GameObject tilePrefab,piecePrefab;
     public Transform parent, pieceParrent;
     float width;
     public delegate void DelAction();
     public DelAction delAction;
-    Dictionary<Vector2, Vector2> oldAndNewPos = new();
     private bool canPlay;
     bool win;
     public int id = 0;
@@ -267,8 +266,8 @@ public class Grid : MonoBehaviour
     {
         Tile tile = tiles[0, 0];
         Tile tile1 = tiles[1, 0];
-        var go = Instantiate(tilePrefab,pieceParrent);
-        var go1 = Instantiate(tilePrefab, pieceParrent);
+        var go = Instantiate(piecePrefab, pieceParrent);
+        var go1 = Instantiate(piecePrefab, pieceParrent);
         tile.piece.SetPosition( go, tile.worldPosition, int.Parse(winNum) / 2);
         
         tile1.piece.SetPosition( go1, tile1.worldPosition, int.Parse(winNum)/2);
@@ -433,8 +432,9 @@ public class Grid : MonoBehaviour
         }
          size = 1000 / (sizeOfGrid+1);
         //Debug.Log(size);
-    
-        tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
+
+         tilePrefab.GetComponent<RectTransform>().sizeDelta = new Vector2(size, size);
+        piecePrefab.GetComponent<RectTransform>().sizeDelta = Vector2.one * size * 0.9f;
         if (tiles != null&&tiles != null)
         {
             foreach (var item in tiles)
@@ -486,7 +486,7 @@ public class Grid : MonoBehaviour
                 if (loadPrevGame && st[i, j].piece.value!=0)
                 {
                 
-                    var piece = Instantiate(tilePrefab, pieceParrent);
+                    var piece = Instantiate(piecePrefab, pieceParrent);
                     //piece.GetComponent<Image>().color = Color.blue;
                     tiles[i, j].piece.SetPosition(piece, go.transform.position, st[i, j].piece.value);
                     score += st[i, j].piece.value;
@@ -513,6 +513,7 @@ public class Grid : MonoBehaviour
     }
     public void CreateNewNumber()
     {
+        
         
         delAction = null;
         Tile tile = tiles[Random.Range(0, sizeOfGrid), Random.Range(0, sizeOfGrid)];
@@ -544,7 +545,7 @@ public class Grid : MonoBehaviour
 
         auSource.PlayOneShot(elseSound);
 
-        var go = Instantiate(tilePrefab, pieceParrent);
+        var go = Instantiate(piecePrefab, pieceParrent);
         go.GetComponent<Image>().color = Color.blue;
         tile.piece.SetPosition( go, tile.worldPosition, 2);
         SetScore();
