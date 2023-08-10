@@ -33,7 +33,7 @@ public class Grid : MonoBehaviour
     int highestScore;
     public AudioSource auSource;
     public AudioClip matchSound, loseSound, winSound, elseSound;
-    public Button music;
+    public Button music,retry;
     private float size;
     int timesGameStarted;
 
@@ -51,6 +51,7 @@ public class Grid : MonoBehaviour
     }
     private IEnumerator Start()
     {
+        retry.onClick.AddListener(() => { StartNewGame(); });
         timesGameStarted = 0;
         if (PlayerPrefs.GetString("music")=="0")
         {
